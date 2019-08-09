@@ -21,6 +21,12 @@ function submitHandler(event){
           },
         body: JSON.stringify(data)
     })
+    .then(response => response.json())
+    .then(monster => {
+        if (document.getElementById("monster-container").children.length < 50){
+            renderMonster(monster)
+        }
+    })
 }
 
 
