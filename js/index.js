@@ -1,98 +1,160 @@
-let url = "http://localhost:3000/monsters/?_limit=50&_page=1"
-document.addEventListener("DOMContentLoaded", function(){
-    document.querySelector("form").addEventListener("submit", submitHandler)
-    fetchAllMonsters(url)
+
+let baseUrl  =  "http://localhost:3000/monsters/?_limit=50&_page=1"
+let pageNumber = 1 
+const containerClear = () => document.getElementById("monster-container").innerHTML = ""
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector("form").addEventListener("submit", postMonster)
+    document.getElementById("next").addEventListener("click", nextCLick)
+    document.getElementById("back").addEventListener("click", backClick)
+    fetchMonster(baseUrl)
+
+
 })
 
-function submitHandler(event){
-    event.preventDefault()
 
-    let data = {
-        name: event.target[0].value,
-        age: event.target[1].value,
-        description: event.target[2].value
+function nextCLick(e) {
+    e.preventDefault()
+    pageNumber += 1 
+    let nextUrl = `http://localhost:3000/monsters/?_limit=50&_page=${pageNumber}`
+    fetch(nextUrl)
+    .then(resp => resp.json())
+    .then(resp => {
+        if(resp.lengh === 0){
+            alert("No monsters here")
+            pageNumber -= 1
+        }
+        else 
+        {
+         containerClear()
+         resp.forEach(e => renderMonster(e))
+        }
+    })
+}
+
+
+function backClick(e) {
+    e.preventDefault(e)
+
+    pageNumber -= 1 
+    let nextUrl = `http://localhost:3000/monsters/?_limit=50&_page=${pageNumber}`
+    fetch(nextUrl)
+    .then(resp => resp.json())
+    .then(resp => {
+        if(resp.lengh === 0){
+            alert("No monsters here")
+            pageNumber += 1
+        }
+        else 
+        {
+         containerClear()
+         resp.forEach(e => renderMonster(e))
+        }
+    })
+
+}
+
+
+
+
+function postMonster(e) {
+    
+
+    e.preventDefault()
+
+    let object = {
+        name: e.target.name.value, 
+        age: e.target.age.value , 
+        description: e.target.age.value
     }
 
-    fetch("http://localhost:3000/monsters", {
+
+    fetch(baseUrl, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json"
-          },
-        body: JSON.stringify(data)
+        }, 
+        body: JSON.stringify(object)    
     })
-    .then(response => response.json())
-    .then(monster => {
-        if (document.getElementById("monster-container").children.length < 50){
-            renderMonster(monster)
-        }
-    })
+    .then(resp => resp.json())
+    .then(renderMonster)
 }
 
 
-function fetchAllMonsters(url){
-    fetch(url)
-    .then(response => response.json())
-    .then(monstersArray => {
-        monstersArray.forEach( renderMonster)
+
+function fetchMonster(baseUrl) {
+    return fetch(baseUrl)
+    .then(resp => resp.json())
+    .then(resp => {
+        resp.forEach(e => renderMonster(e))
     })
 }
 
-function renderMonster(monster){
+function renderMonster(monster) {
+   
+
     // create div for each monster
-    let monsterDiv = document.createElement("div")
-    document.querySelector("#monster-container").appendChild(monsterDiv)
+    let monsterDiv = document.createElement('div')
     monsterDiv.id = `monster-${monster.id}`
+    document.getElementById('monster-container').appendChild(monsterDiv)
 
-    // create h2 for each monster name
-    let mName = document.createElement("h2")
-    monsterDiv.appendChild(mName)
-    mName.innerText = monster.name
 
-    // create h4 for monster age
-    let mAge = document.createElement("h4")
-    monsterDiv.appendChild(mAge)
-    mAge.innerText = `Age: ${monster.age}`
+    // create name 
+    let monsterName = document.createElement('h3')
+    monsterName.innerText = `name: ${monster.name}` 
+    monsterDiv.appendChild(monsterName)
+    
 
-    // create p for monster description
-    let mDesc = document.createElement("p")
-    monsterDiv.appendChild(mDesc)
-    mDesc.innerText = `Bio: ${monster.description}`
+
+    //create age 
+    let monsterAge =  document.createElement('h5')
+    monsterAge.innerText = `Age: ${monster.age}`
+    monsterDiv.appendChild(monsterAge)
+
+
+
+
+    //create description 
+    let monsterDes = document.createElement('p')
+    monsterDes.innerText = `Description: ${monster.description}`
+    monsterDiv.appendChild(monsterDes)
+
+
+    //create id
+    let monsterId = document.createElement('p')
+    monsterId.innerText = `id: ${monster.id}`
+    monsterDiv.appendChild(monsterId)
+    
+
 }
 
-// forward button logic
-const fwdButton = document.getElementById("forward")
-let pageNum = 1
-fwdButton.addEventListener('click', () => {
-    
-    pageNum += 1 
-    let nextUrl = `http://localhost:3000/monsters/?_limit=50&_page=${pageNum}`
-    fetch(nextUrl)
-    .then(response => response.json())
-    .then(monstersArray => {
-        if (monstersArray.length === 0){
-            alert("Ain't no monsters here")
-            pageNum -= 1
-        }
-        else{
-            document.getElementById("monster-container").innerHTML = ""
-            monstersArray.forEach( renderMonster)
-        }
-    })
 
 
-})
 
-// back button logic
-const backButton = document.getElementById("back")
-backButton.addEventListener('click', () => {
-    if (pageNum === 1){
-        alert("Ain't no monsters here")
-    }
-    else{
-        document.getElementById("monster-container").innerHTML = ""
-        pageNum -= 1
-        let prevUrl = `http://localhost:3000/monsters/?_limit=50&_page=${pageNum}`
-        fetchAllMonsters(prevUrl)
-    }
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
